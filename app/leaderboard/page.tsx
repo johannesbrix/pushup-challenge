@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import BottomNav from "@/components/bottom-nav"
 
 export default function Leaderboard() {
     return (
@@ -13,6 +14,7 @@ export default function Leaderboard() {
             </CardContent>
           </Card>
         </div>
+        <BottomNav />
       </main>
     )
 
