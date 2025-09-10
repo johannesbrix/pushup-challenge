@@ -26,6 +26,14 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 bg-gray-50 pb-20">
       <div className="max-w-md mx-auto pt-8">
+
+        <div className="mb-4 text-center">
+          <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full inline-block">
+            <span className="font-semibold text-sm">Week 2 • Day 10</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">36 days remaining</p>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Daily Check-in</CardTitle>
@@ -63,13 +71,23 @@ export default function Home() {
 
             <div>
               <p className="text-sm font-medium mb-2">How did it feel? (1-10)</p>
-              <RadioGroup value={rating} onValueChange={setRating} className="flex flex-wrap gap-2">
-                {[1,2,3,4,5,6,7,8,9,10].map(num => (
-                  <div key={num} className="flex items-center space-x-1">
-                    <RadioGroupItem value={num.toString()} id={`r${num}`} />
-                    <Label htmlFor={`r${num}`} className="text-sm">{num}</Label>
-                  </div>
-                ))}
+              <RadioGroup value={rating} onValueChange={setRating} className="space-y-2">
+                <div className="flex gap-2 justify-center">
+                  {[1,2,3,4,5].map(num => (
+                    <div key={num} className="flex items-center space-x-1">
+                      <RadioGroupItem value={num.toString()} id={`r${num}`} />
+                      <Label htmlFor={`r${num}`} className="text-sm">{num}</Label>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 justify-center">
+                  {[6,7,8,9,10].map(num => (
+                    <div key={num} className="flex items-center space-x-1">
+                      <RadioGroupItem value={num.toString()} id={`r${num}`} />
+                      <Label htmlFor={`r${num}`} className="text-sm">{num}</Label>
+                    </div>
+                  ))}
+                </div>
               </RadioGroup>
               <p className="text-sm text-gray-600 mt-1">Rating: {rating}/10</p>
             </div>
@@ -110,6 +128,34 @@ export default function Home() {
         </Card>
       </div>
       <BottomNav />
+
+      <div className="mt-6 space-y-3">
+          <h2 className="text-lg font-semibold text-gray-800">Recent Activity</h2>
+          
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium text-sm">John logged progress</p>
+                  <p className="text-xs text-gray-600">45 pushups • 0.45 points • "Feeling strong today!"</p>
+                </div>
+                <span className="text-xs text-gray-400">2h ago</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="p-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-medium text-sm">Sarah completed her goal! 🎉</p>
+                  <p className="text-xs text-gray-600">35 minutes meditation • 1.17 points</p>
+                </div>
+                <span className="text-xs text-gray-400">4h ago</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
     </main>
   );
 }
