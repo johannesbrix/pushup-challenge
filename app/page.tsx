@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useHabit } from "@/context/HabitContext";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Home() {
-  const [minutes, setMinutes] = useState([30]);
+  const { habitData } = useHabit();
+  const [minutes, setMinutes] = useState([parseInt(habitData.dailyGoal)]);
   const [rating, setRating] = useState("5");
-  const dailyGoal = 30;
+  const dailyGoal = parseInt(habitData.dailyGoal);
   const points = (minutes[0] / dailyGoal).toFixed(1);
+
   const [isSubmitted, setIsSubmitted] = useState(false);  
   const [message, setMessage] = useState("");
 
@@ -40,13 +43,13 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-medium mb-2">Today's Goal: {dailyGoal} minutes reading</h3>
+              <h3 className="font-medium mb-2">Today's Goal: {dailyGoal} {habitData.habitUnit} {habitData.habitName}</h3>
               <p className="text-sm text-gray-600">How much did you achieve?</p>
             </div>
             
             <div>
               <div className="flex justify-between items-center mb-3">
-                <p className="text-sm font-medium">Minutes: {minutes[0]}</p>
+                <p className="text-sm font-medium">{habitData.habitUnit.charAt(0).toUpperCase() + habitData.habitUnit.slice(1)}: {minutes[0]}</p>
                 <span className="text-xs text-gray-500">Goal: {dailyGoal}</span>
               </div>
               <Slider
