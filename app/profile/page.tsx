@@ -1,7 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
+  const [habitName, setHabitName] = useState("");
+  const [habitUnit, setHabitUnit] = useState("");
+  const [dailyGoal, setDailyGoal] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-sm mx-auto px-4 pt-6">
@@ -18,16 +26,21 @@ export default function Profile() {
           <CardContent className="space-y-6">
             <div>
               <label className="text-sm font-medium mb-2 block">What habit do you want to build?</label>
-              <input
+<input
                 type="text"
                 placeholder="e.g., reading, pushups, meditation"
+                value={habitName}
+                onChange={(e) => setHabitName(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
               <label className="text-sm font-medium mb-2 block">How do you measure it?</label>
-              <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <select 
+                value={habitUnit}
+                onChange={(e) => setHabitUnit(e.target.value)}
+                className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 <option value="">Choose unit type...</option>
                 <option value="minutes">Minutes</option>
                 <option value="reps">Reps</option>
@@ -43,15 +56,40 @@ export default function Profile() {
                 type="number"
                 placeholder="e.g., 30, 100, 5"
                 min="1"
+                value={dailyGoal}
+                onChange={(e) => setDailyGoal(e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-500 mt-1">How much do you want to achieve each day?</p>
             </div>
 
             <div className="pt-2">
-              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                Save Habit Goal
-              </button>
+              {!isSaved ? (
+                <button 
+                  onClick={() => {
+                    if (habitName && habitUnit && dailyGoal) {
+                      setIsSaved(true);
+                    } else {
+                      alert("Please fill in all fields first!");
+                    }
+                  }}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                >
+                  Save Habit Goal
+                </button>
+              ) : (
+                <div className="text-center">
+                  <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-3">
+                    ✅ Habit saved: {dailyGoal} {habitUnit} {habitName}!
+                  </div>
+                  <button 
+                    onClick={() => setIsSaved(false)}
+                    className="w-full bg-gray-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                  >
+                    Edit Habit
+                  </button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
