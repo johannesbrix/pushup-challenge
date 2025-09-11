@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useHabit } from "@/context/HabitContext";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
-  const [habitName, setHabitName] = useState("");
-  const [habitUnit, setHabitUnit] = useState("");
-  const [dailyGoal, setDailyGoal] = useState("");
+  const { habitData, updateHabit } = useHabit();
+  const [habitName, setHabitName] = useState(habitData.habitName);
+  const [habitUnit, setHabitUnit] = useState(habitData.habitUnit);
+  const [dailyGoal, setDailyGoal] = useState(habitData.dailyGoal);
   const [isSaved, setIsSaved] = useState(false);
   const [savedHabitName, setSavedHabitName] = useState("");
   const [savedHabitUnit, setSavedHabitUnit] = useState("");
   const [savedDailyGoal, setSavedDailyGoal] = useState("");
-
+  
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-sm mx-auto px-4 pt-6">
@@ -71,6 +73,7 @@ export default function Profile() {
                 <button 
                 onClick={() => {
                   if (habitName && habitUnit && dailyGoal) {
+                    updateHabit({ habitName, habitUnit, dailyGoal });
                     setSavedHabitName(habitName);
                     setSavedHabitUnit(habitUnit);
                     setSavedDailyGoal(dailyGoal);
