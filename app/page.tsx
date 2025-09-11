@@ -20,7 +20,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
 
   const resetForm = () => {
-    setMinutes([30]);
+    setMinutes([parseInt(habitData.dailyGoal)]);
     setRating("5");
     setMessage("");
     setIsSubmitted(false);
