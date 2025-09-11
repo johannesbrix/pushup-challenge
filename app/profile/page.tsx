@@ -9,6 +9,9 @@ export default function Profile() {
   const [habitUnit, setHabitUnit] = useState("");
   const [dailyGoal, setDailyGoal] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const [savedHabitName, setSavedHabitName] = useState("");
+  const [savedHabitUnit, setSavedHabitUnit] = useState("");
+  const [savedDailyGoal, setSavedDailyGoal] = useState("");
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -66,13 +69,16 @@ export default function Profile() {
             <div className="pt-2">
               {!isSaved ? (
                 <button 
-                  onClick={() => {
-                    if (habitName && habitUnit && dailyGoal) {
-                      setIsSaved(true);
-                    } else {
-                      alert("Please fill in all fields first!");
-                    }
-                  }}
+                onClick={() => {
+                  if (habitName && habitUnit && dailyGoal) {
+                    setSavedHabitName(habitName);
+                    setSavedHabitUnit(habitUnit);
+                    setSavedDailyGoal(dailyGoal);
+                    setIsSaved(true);
+                  } else {
+                    alert("Please fill in all fields first!");
+                  }
+                }}
                   className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
                   Save Habit Goal
@@ -80,7 +86,7 @@ export default function Profile() {
               ) : (
                 <div className="text-center">
                   <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-3">
-                    ✅ Habit saved: {dailyGoal} {habitUnit} {habitName}!
+                    ✅ Habit saved: {savedDailyGoal} {savedHabitUnit} {savedHabitName}!
                   </div>
                   <button 
                     onClick={() => setIsSaved(false)}
