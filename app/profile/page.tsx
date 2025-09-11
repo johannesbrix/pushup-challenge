@@ -3,16 +3,89 @@ import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
   return (
-    <main className="min-h-screen p-4 bg-gray-50 pb-20">
-      <div className="max-w-md mx-auto pt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
+    <main className="min-h-screen bg-gray-50 pb-24">
+      <div className="max-w-sm mx-auto px-4 pt-6">
+        
+        <div className="mb-6 text-center">
+          <h1 className="text-xl font-bold text-gray-800">Your Profile</h1>
+          <p className="text-sm text-gray-600 mt-1">Manage your habit challenge</p>
+        </div>
+
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Habit Setup</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">Your profile info coming soon! 👤</p>
+          <CardContent className="space-y-6">
+            <div>
+              <label className="text-sm font-medium mb-2 block">What habit do you want to build?</label>
+              <input
+                type="text"
+                placeholder="e.g., reading, pushups, meditation"
+                className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">How do you measure it?</label>
+              <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="">Choose unit type...</option>
+                <option value="minutes">Minutes</option>
+                <option value="reps">Reps</option>
+                <option value="pages">Pages</option>
+                <option value="hours">Hours</option>
+                <option value="times">Times</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Daily goal amount</label>
+              <input
+                type="number"
+                placeholder="e.g., 30, 100, 5"
+                min="1"
+                className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">How much do you want to achieve each day?</p>
+            </div>
+
+            <div className="pt-2">
+              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                Save Habit Goal
+              </button>
+            </div>
           </CardContent>
         </Card>
+
+        <Card className="shadow-sm mt-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Your Progress</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">15.5</p>
+                <p className="text-xs text-gray-600">Total Points</p>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">78%</p>
+                <p className="text-xs text-gray-600">Completion Rate</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 bg-orange-50 rounded-lg">
+                <p className="text-2xl font-bold text-orange-600">7</p>
+                <p className="text-xs text-gray-600">Day Streak</p>
+              </div>
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <p className="text-2xl font-bold text-purple-600">12</p>
+                <p className="text-xs text-gray-600">Days Active</p>
+              </div>
+            </div>
+
+          </CardContent>
+        </Card>
+        
       </div>
       <BottomNav />
     </main>
