@@ -55,15 +55,15 @@ export default function Home() {
               <Slider
                 value={minutes}
                 onValueChange={setMinutes}
-                max={90}
+                max={dailyGoal * 3}
                 min={0}
-                step={5}
+                step={Math.max(1, Math.floor(dailyGoal / 20))}
                 className="w-full mb-4"
               />
               <div className="flex justify-between text-xs text-gray-400 mb-3">
                 <span>0</span>
-                <span>45</span>
-                <span>90</span>
+                <span>{Math.floor(dailyGoal * 1.5)}</span>
+                <span>{dailyGoal * 3}</span>
               </div>
               <div className="text-center">
                 <span className="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm">
