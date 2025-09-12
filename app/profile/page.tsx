@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHabit } from "@/context/HabitContext";
+import { useUser } from "@clerk/nextjs";
 import { SignOutButton } from "@clerk/nextjs";
+import { createHabit, getHabitsByUserId, updateHabit } from "@/actions/habits-actions";
+import { getUserByClerkId } from "@/actions/users-actions";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
-  const { habitData, updateHabit } = useHabit();
+  const { habitData, updateHabit: updateHabitContext } = useHabit();
+  const { user } = useUser();
   const [habitName, setHabitName] = useState(habitData.habitName);
   const [habitUnit, setHabitUnit] = useState(habitData.habitUnit);
   const [dailyGoal, setDailyGoal] = useState(habitData.dailyGoal);
@@ -15,8 +19,40 @@ export default function Profile() {
   const [savedHabitName, setSavedHabitName] = useState("");
   const [savedHabitUnit, setSavedHabitUnit] = useState("");
   const [savedDailyGoal, setSavedDailyGoal] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [dbUserId, setDbUserId] = useState<string>("");
   
-  // Check if user is new (hasn't saved anything yet)
+  // Load user's existing habit from database
+  useEffect(() => {
+    async function loadUserHabit() {
+      if (!user) return;
+      
+      try {
+        const dbUser = await getUserByClerkId(user.id);
+        if (dbUser) {
+          setDbUserId(dbUser.id);
+          const habits = await getHabitsByUserId(dbUser.id);
+          if (habits.length > 0) {
+            const habit = habits[0]; // Get first habit for now
+            setHabitName(habit.name);
+            setHabitUnit(habit.unit);
+            setDailyGoal(habit.daily_goal.toString());
+            updateHabitContext({
+              habitName: habit.name,
+              habitUnit: habit.unit,
+              dailyGoal: habit.daily_goal.toString(),
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load user habit:", error);
+      }
+    }
+    
+    loadUserHabit();
+  }, [user, updateHabitContext]);
+
+  // Check if user is new
   const isNewUser = !localStorage.getItem('habitSaved');
   
   return (
@@ -84,21 +120,51 @@ export default function Profile() {
             <div className="pt-2">
               {!isSaved ? (
                 <button 
-                onClick={() => {
-                  if (habitName && habitUnit && dailyGoal) {
-                    updateHabit({ habitName, habitUnit, dailyGoal });
-                    localStorage.setItem('habitSaved', 'true');
-                    setSavedHabitName(habitName);
-                    setSavedHabitUnit(habitUnit);
-                    setSavedDailyGoal(dailyGoal);
-                    setIsSaved(true);
+                onClick={async () => {
+                  if (habitName && habitUnit && dailyGoal && dbUserId) {
+                    setIsLoading(true);
+                    try {
+                      // Check if user already has a habit
+                      const existingHabits = await getHabitsByUserId(dbUserId);
+                      
+                      if (existingHabits.length > 0) {
+                        // Update existing habit
+                        await updateHabit({
+                          id: existingHabits[0].id,
+                          name: habitName,
+                          unit: habitUnit,
+                          daily_goal: parseInt(dailyGoal),
+                        });
+                      } else {
+                        // Create new habit
+                        await createHabit({
+                          user_id: dbUserId,
+                          name: habitName,
+                          unit: habitUnit,
+                          daily_goal: parseInt(dailyGoal),
+                        });
+                      }
+                      
+                      // Update context and UI
+                      updateHabitContext({ habitName, habitUnit, dailyGoal });
+                      localStorage.setItem('habitSaved', 'true');
+                      setSavedHabitName(habitName);
+                      setSavedHabitUnit(habitUnit);
+                      setSavedDailyGoal(dailyGoal);
+                      setIsSaved(true);
+                    } catch (error) {
+                      console.error("Failed to save habit:", error);
+                      alert("Failed to save habit. Please try again.");
+                    } finally {
+                      setIsLoading(false);
+                    }
                   } else {
                     alert("Please fill in all fields first!");
                   }
                 }}
                   className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
-                  Save Habit Goal
+                  {isLoading ? "Saving..." : "Save Habit Goal"}
                 </button>
               ) : (
                 <div className="text-center">
