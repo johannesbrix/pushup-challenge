@@ -16,14 +16,26 @@ export default function Profile() {
   const [savedHabitUnit, setSavedHabitUnit] = useState("");
   const [savedDailyGoal, setSavedDailyGoal] = useState("");
   
+  // Check if user is new (hasn't saved anything yet)
+  const isNewUser = !localStorage.getItem('habitSaved');
+  
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-sm mx-auto px-4 pt-6">
         
-        <div className="mb-6 text-center">
+      <div className="mb-6 text-center">
           <h1 className="text-xl font-bold text-gray-800">Your Profile</h1>
           <p className="text-sm text-gray-600 mt-1">Manage your habit challenge</p>
         </div>
+
+        {isNewUser && (
+          <Card className="shadow-sm mb-6 bg-blue-50 border-blue-200">
+            <CardContent className="p-4 text-center">
+              <h2 className="font-semibold text-blue-800 mb-2">Welcome to your 6-week challenge!</h2>
+              <p className="text-sm text-blue-700">Set up your daily habit below to get started. You'll track this same habit for 6 weeks with your friends.</p>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-sm">
           <CardHeader className="pb-4">
@@ -75,6 +87,7 @@ export default function Profile() {
                 onClick={() => {
                   if (habitName && habitUnit && dailyGoal) {
                     updateHabit({ habitName, habitUnit, dailyGoal });
+                    localStorage.setItem('habitSaved', 'true');
                     setSavedHabitName(habitName);
                     setSavedHabitUnit(habitUnit);
                     setSavedDailyGoal(dailyGoal);
