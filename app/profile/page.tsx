@@ -10,11 +10,11 @@ import { getUserByClerkId } from "@/actions/users-actions";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
-  const { habitData, updateHabit: updateHabitContext } = useHabit();
+  const { habitData, updateHabit: updateHabitContext, isLoading: contextLoading } = useHabit();
   const { user } = useUser();
-  const [habitName, setHabitName] = useState(habitData.habitName);
-  const [habitUnit, setHabitUnit] = useState(habitData.habitUnit);
-  const [dailyGoal, setDailyGoal] = useState(habitData.dailyGoal);
+  const [habitName, setHabitName] = useState("");
+  const [habitUnit, setHabitUnit] = useState("");
+  const [dailyGoal, setDailyGoal] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [savedHabitName, setSavedHabitName] = useState("");
   const [savedHabitUnit, setSavedHabitUnit] = useState("");
@@ -22,35 +22,32 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(false);
   const [dbUserId, setDbUserId] = useState<string>("");
   
-  // Load user's existing habit from database
+  // Initialize form with context data only once when context loads
   useEffect(() => {
-    async function loadUserHabit() {
+    if (!contextLoading && habitData) {
+      setHabitName(habitData.habitName);
+      setHabitUnit(habitData.habitUnit);
+      setDailyGoal(habitData.dailyGoal);
+    }
+  }, [contextLoading, habitData]);
+
+  // Get database user ID
+  useEffect(() => {
+    async function getDbUserId() {
       if (!user) return;
       
       try {
         const dbUser = await getUserByClerkId(user.id);
         if (dbUser) {
           setDbUserId(dbUser.id);
-          const habits = await getHabitsByUserId(dbUser.id);
-          if (habits.length > 0) {
-            const habit = habits[0]; // Get first habit for now
-            setHabitName(habit.name);
-            setHabitUnit(habit.unit);
-            setDailyGoal(habit.daily_goal.toString());
-            updateHabitContext({
-              habitName: habit.name,
-              habitUnit: habit.unit,
-              dailyGoal: habit.daily_goal.toString(),
-            });
-          }
         }
       } catch (error) {
-        console.error("Failed to load user habit:", error);
+        console.error("Failed to get user ID:", error);
       }
     }
     
-    loadUserHabit();
-  }, [user, updateHabitContext]);
+    getDbUserId();
+  }, [user]);
 
   // Check if user is new
   const isNewUser = !localStorage.getItem('habitSaved');
