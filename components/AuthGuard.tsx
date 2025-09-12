@@ -2,9 +2,25 @@
 
 import { useUser } from "@clerk/nextjs";
 import { SignIn } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { createOrUpdateUser } from "@/actions/users-actions";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  // Save user to database when they sign in
+  useEffect(() => {
+    if (isSignedIn && user) {
+      createOrUpdateUser({
+        clerk_id: user.id,
+        email: user.emailAddresses[0]?.emailAddress || "",
+        first_name: user.firstName || undefined,
+        last_name: user.lastName || undefined,
+      }).catch((error) => {
+        console.error("Failed to save user to database:", error);
+      });
+    }
+  }, [isSignedIn, user]);
 
   if (!isLoaded) {
     return (
