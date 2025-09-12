@@ -17,7 +17,7 @@ import { getRecentSubmissions } from "@/actions/submissions-actions";
 export default function Home() {
   const { habitData } = useHabit();
   const { user } = useUser();
-  const [minutes, setMinutes] = useState([parseInt(habitData.dailyGoal)]);
+  const [minutes, setMinutes] = useState([30]); // Start with fallback
   const [rating, setRating] = useState("5");
   const [message, setMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -48,6 +48,13 @@ export default function Home() {
     }
   }
 
+  const resetForm = () => {
+    setMinutes([parseInt(habitData.dailyGoal)]);
+    setRating("5");
+    setMessage("");
+    setIsSubmitted(false);
+  };
+
   // Load recent submissions for the feed
   useEffect(() => {
     async function loadSubmissions() {
@@ -64,12 +71,12 @@ export default function Home() {
     loadSubmissions();
   }, [isSubmitted]); // Reload when user submits new data
   
-  const resetForm = () => {
-    setMinutes([parseInt(habitData.dailyGoal)]);
-    setRating("5");
-    setMessage("");
-    setIsSubmitted(false);
-  };
+  // Update slider when habit data loads from database
+  useEffect(() => {
+    if (!isLoading && habitData.dailyGoal) {
+      setMinutes([parseInt(habitData.dailyGoal)]);
+    }
+  }, [habitData.dailyGoal, isLoading]);
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
