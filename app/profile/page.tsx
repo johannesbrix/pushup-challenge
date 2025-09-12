@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHabit } from "@/context/HabitContext";
+import { SignOutButton } from "@clerk/nextjs";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
@@ -133,6 +134,16 @@ export default function Profile() {
           </CardContent>
         </Card>
         
+        <Card className="shadow-sm mt-6">
+          <CardContent className="p-4 text-center">
+            <SignOutButton>
+              <button className="w-full bg-red-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+                Sign Out
+              </button>
+            </SignOutButton>
+          </CardContent>
+        </Card>
+
       </div>
       <BottomNav />
     </main>
