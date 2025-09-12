@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { HabitProvider } from "@/context/HabitContext";
 import "./globals.css";
 
@@ -13,12 +14,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <HabitProvider>
-          {children}
-        </HabitProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <HabitProvider>
+            {children}
+          </HabitProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
