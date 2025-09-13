@@ -1,4 +1,9 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { calculateLeaderboard, calculateGroupStats } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Leaderboard() {
@@ -18,73 +23,7 @@ export default function Leaderboard() {
             <CardTitle className="text-lg">Rankings 🏆</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-yellow-600">🥇</span>
-                  <div>
-                    <p className="font-medium text-sm">Sarah</p>
-                    <p className="text-xs text-gray-600">25.5 points • 12 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-yellow-600">#1</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-600">🥈</span>
-                  <div>
-                    <p className="font-medium text-sm">You</p>
-                    <p className="text-xs text-gray-600">15.5 points • 7 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-gray-600">#2</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-orange-600">🥉</span>
-                  <div>
-                    <p className="font-medium text-sm">John</p>
-                    <p className="text-xs text-gray-600">12.0 points • 5 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-orange-600">#3</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-400">4</span>
-                  <div>
-                    <p className="font-medium text-sm">Mike</p>
-                    <p className="text-xs text-gray-600">8.5 points • 3 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-gray-400">#4</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-400">5</span>
-                  <div>
-                    <p className="font-medium text-sm">Lisa</p>
-                    <p className="text-xs text-gray-600">6.0 points • 2 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-gray-400">#5</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-400">6</span>
-                  <div>
-                    <p className="font-medium text-sm">Alex</p>
-                    <p className="text-xs text-gray-600">2.5 points • 1 day streak</p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-gray-400">#6</span>
-              </div>
+            <LeaderboardList />
           </CardContent>
         </Card>
 
@@ -124,4 +63,69 @@ export default function Leaderboard() {
       <BottomNav />
     </main>
   );
+
+  function LeaderboardList() {
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+  
+    useEffect(() => {
+      async function loadLeaderboard() {
+        try {
+          const data = await calculateLeaderboard();
+          setLeaderboard(data);
+        } catch (error) {
+          console.error("Failed to load leaderboard:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      
+      loadLeaderboard();
+    }, []);
+  
+    if (isLoading) {
+      return <p className="text-center text-gray-600">Loading rankings...</p>;
+    }
+  
+    if (leaderboard.length === 0) {
+      return <p className="text-center text-gray-600">No rankings yet. Start logging progress!</p>;
+    }
+  
+    return (
+      <div className="space-y-3">
+        {leaderboard.map((user: any, index) => {
+          const isFirst = index === 0;
+          const isSecond = index === 1;
+          const isThird = index === 2;
+          
+          let bgColor = "bg-white border-gray-200";
+          let medal = `${index + 1}`;
+          
+          if (isFirst) {
+            bgColor = "bg-yellow-50 border-yellow-200";
+            medal = "🥇";
+          } else if (isSecond) {
+            bgColor = "bg-gray-50 border-gray-200";
+            medal = "🥈";
+          } else if (isThird) {
+            bgColor = "bg-orange-50 border-orange-200";
+            medal = "🥉";
+          }
+          
+          return (
+            <div key={user.user_id} className={`flex items-center justify-between p-3 ${bgColor} border rounded-lg`}>
+              <div className="flex items-center space-x-3">
+                <span className="text-lg font-bold text-gray-600">{medal}</span>
+                <div>
+                  <p className="font-medium text-sm">{user.name}</p>
+                  <p className="text-xs text-gray-600">{user.total_score} points</p>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-gray-600">#{index + 1}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 }

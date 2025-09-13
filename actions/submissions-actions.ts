@@ -81,3 +81,78 @@ export async function createSubmission({
     throw new Error("Failed to create submission.");
   }
 }
+
+export async function calculateLeaderboard() {
+  try {
+    console.log("Server Action: Calculating leaderboard...");
+    
+    const allSubmissions = await db
+      .select({
+        user_id: submissions.user_id,
+        submission_date: submissions.submission_date,
+        points: submissions.points,
+        user_first_name: users.first_name,
+        user_last_name: users.last_name,
+      })
+      .from(submissions)
+      .leftJoin(users, eq(submissions.user_id, users.id));
+    
+    // Group submissions by user and date
+    const userDailyPoints: Record<string, Record<string, number>> = {};
+    
+    allSubmissions.forEach((submission) => {
+      const userId = submission.user_id;
+      const date = submission.submission_date;
+      const points = submission.points;
+      
+      if (!userDailyPoints[userId]) {
+        userDailyPoints[userId] = {};
+      }
+      
+      if (!userDailyPoints[userId][date]) {
+        userDailyPoints[userId][date] = 0;
+      }
+      
+      // Add points for this submission to the daily total
+      userDailyPoints[userId][date] += points;
+    });
+    
+    // Calculate final scores with 3-point daily maximum
+    const leaderboard = [];
+    const userNames: Record<string, string> = {};
+    
+    // Get user names
+    allSubmissions.forEach((submission) => {
+      if (!userNames[submission.user_id]) {
+        userNames[submission.user_id] = submission.user_first_name || "Anonymous";
+      }
+    });
+    
+    // Calculate total scores
+    Object.keys(userDailyPoints).forEach((userId) => {
+      let totalScore = 0;
+      
+      Object.keys(userDailyPoints[userId]).forEach((date) => {
+        const dailyPoints = userDailyPoints[userId][date];
+        // Apply 3-point daily maximum
+        const cappedDailyPoints = Math.min(dailyPoints, 3);
+        totalScore += cappedDailyPoints;
+      });
+      
+      leaderboard.push({
+        user_id: userId,
+        name: userNames[userId],
+        total_score: Math.round(totalScore * 10) / 10, // Round to 1 decimal
+      });
+    });
+    
+    // Sort by highest score first
+    leaderboard.sort((a, b) => b.total_score - a.total_score);
+    
+    console.log(`Server Action: Calculated leaderboard for ${leaderboard.length} users`);
+    return leaderboard;
+  } catch (error) {
+    console.error("Server Action Error (calculateLeaderboard):", error);
+    throw new Error("Failed to calculate leaderboard.");
+  }
+}

@@ -246,8 +246,12 @@ export default function Home() {
                         </p>
                         <p className="text-xs text-gray-600 mt-1">
                           {submission.actual_amount} {submission.habit_unit} {submission.habit_name} • {submission.points} points
-                          {submission.note && ` • "${submission.note}"`}
                         </p>
+                        {submission.note && (
+                          <p className="text-xs text-gray-600 mt-1 break-words">
+                            "{submission.note}"
+                          </p>
+                        )}
                       </div>
                       <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
                         {formatTimeAgo(submission.created_at)}
