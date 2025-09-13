@@ -86,65 +86,29 @@ export async function calculateLeaderboard() {
   try {
     console.log("Server Action: Calculating leaderboard...");
     
-    const allSubmissions = await db
+    // Get all unique users who have submitted
+    const uniqueUsers = await db
       .select({
         user_id: submissions.user_id,
-        submission_date: submissions.submission_date,
-        points: submissions.points,
         user_first_name: users.first_name,
         user_last_name: users.last_name,
       })
       .from(submissions)
-      .leftJoin(users, eq(submissions.user_id, users.id));
+      .leftJoin(users, eq(submissions.user_id, users.id))
+      .groupBy(submissions.user_id, users.first_name, users.last_name);
     
-    // Group submissions by user and date
-    const userDailyPoints: Record<string, Record<string, number>> = {};
-    
-    allSubmissions.forEach((submission) => {
-      const userId = submission.user_id;
-      const date = submission.submission_date;
-      const points = submission.points;
-      
-      if (!userDailyPoints[userId]) {
-        userDailyPoints[userId] = {};
-      }
-      
-      if (!userDailyPoints[userId][date]) {
-        userDailyPoints[userId][date] = 0;
-      }
-      
-      // Add points for this submission to the daily total
-      userDailyPoints[userId][date] += points;
-    });
-    
-    // Calculate final scores with 3-point daily maximum
+    // Calculate total points for each user
     const leaderboard = [];
-    const userNames: Record<string, string> = {};
     
-    // Get user names
-    allSubmissions.forEach((submission) => {
-      if (!userNames[submission.user_id]) {
-        userNames[submission.user_id] = submission.user_first_name || "Anonymous";
-      }
-    });
-    
-    // Calculate total scores
-    Object.keys(userDailyPoints).forEach((userId) => {
-      let totalScore = 0;
-      
-      Object.keys(userDailyPoints[userId]).forEach((date) => {
-        const dailyPoints = userDailyPoints[userId][date];
-        // Apply 3-point daily maximum
-        const cappedDailyPoints = Math.min(dailyPoints, 3);
-        totalScore += cappedDailyPoints;
-      });
+    for (const user of uniqueUsers) {
+      const totalScore = await calculateUserTotalPoints(user.user_id);
       
       leaderboard.push({
-        user_id: userId,
-        name: userNames[userId],
-        total_score: Math.round(totalScore * 10) / 10, // Round to 1 decimal
+        user_id: user.user_id,
+        name: user.user_first_name || "Anonymous",
+        total_score: totalScore,
       });
-    });
+    }
     
     // Sort by highest score first
     leaderboard.sort((a, b) => b.total_score - a.total_score);
@@ -254,3 +218,122 @@ export async function calculateGroupPoints() {
   }
 }
 
+export async function calculateUserCompletionRate(user_id: string) {
+  try {
+    console.log(`Server Action: Calculating completion rate for user ${user_id}...`);
+    
+    const userSubmissions = await db
+      .select({
+        submission_date: submissions.submission_date,
+        points: submissions.points,
+      })
+      .from(submissions)
+      .where(eq(submissions.user_id, user_id));
+    
+    if (userSubmissions.length === 0) {
+      return {
+        completed_days: 0,
+        total_active_days: 0,
+        completion_rate: 0,
+      };
+    }
+    
+    // Group by date and sum points per day
+    const dailyTotals: Record<string, number> = {};
+    
+    userSubmissions.forEach((submission) => {
+      const date = submission.submission_date;
+      if (!dailyTotals[date]) {
+        dailyTotals[date] = 0;
+      }
+      dailyTotals[date] += submission.points;
+    });
+    
+    // Calculate completion rate
+    let completedDays = 0;
+    const totalActiveDays = Object.keys(dailyTotals).length;
+    
+    Object.values(dailyTotals).forEach((dailyTotal) => {
+      if (dailyTotal >= 1.0) {
+        completedDays += 1;
+      }
+    });
+    
+    const completionRate = totalActiveDays > 0 ? (completedDays / totalActiveDays) * 100 : 0;
+    
+    console.log(`Server Action: User completion rate - ${completedDays}/${totalActiveDays} = ${completionRate.toFixed(1)}%`);
+    
+    return {
+      completed_days: completedDays,
+      total_active_days: totalActiveDays,
+      completion_rate: Math.round(completionRate * 10) / 10,
+    };
+  } catch (error) {
+    console.error("Server Action Error (calculateUserCompletionRate):", error);
+    throw new Error("Failed to calculate user completion rate.");
+  }
+}
+
+export async function calculateUserTotalPoints(user_id: string) {
+  try {
+    console.log(`Server Action: Calculating total points for user ${user_id}...`);
+    
+    const userSubmissions = await db
+      .select({
+        submission_date: submissions.submission_date,
+        points: submissions.points,
+      })
+      .from(submissions)
+      .where(eq(submissions.user_id, user_id));
+    
+    if (userSubmissions.length === 0) {
+      return 0;
+    }
+    
+    // Group submissions by date and sum points per day
+    const dailyTotals: Record<string, number> = {};
+    
+    userSubmissions.forEach((submission) => {
+      const date = submission.submission_date;
+      if (!dailyTotals[date]) {
+        dailyTotals[date] = 0;
+      }
+      dailyTotals[date] += submission.points;
+    });
+    
+    // Calculate total score with 3-point daily maximum
+    let totalScore = 0;
+    
+    Object.values(dailyTotals).forEach((dailyTotal) => {
+      const cappedDailyPoints = Math.min(dailyTotal, 3);
+      totalScore += cappedDailyPoints;
+    });
+    
+    const roundedScore = Math.round(totalScore * 10) / 10;
+    console.log(`Server Action: User total points: ${roundedScore}`);
+    
+    return roundedScore;
+  } catch (error) {
+    console.error("Server Action Error (calculateUserTotalPoints):", error);
+    throw new Error("Failed to calculate user total points.");
+  }
+}
+
+export async function calculateUserDaysActive(user_id: string) {
+  try {
+    console.log(`Server Action: Calculating days active for user ${user_id}...`);
+    
+    const distinctDates = await db
+      .selectDistinct({ submission_date: submissions.submission_date })
+      .from(submissions)
+      .where(eq(submissions.user_id, user_id));
+    
+    const daysActive = distinctDates.length;
+    console.log(`Server Action: User has been active for ${daysActive} days`);
+    
+    return daysActive;
+  } catch (error) {
+    console.error("Server Action Error (calculateUserDaysActive):", error);
+    throw new Error("Failed to calculate user days active.");
+  }
+}

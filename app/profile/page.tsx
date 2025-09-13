@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { SignOutButton } from "@clerk/nextjs";
 import { createHabit, getHabitsByUserId, updateHabit } from "@/actions/habits-actions";
 import { getUserByClerkId } from "@/actions/users-actions";
+import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
@@ -210,6 +211,70 @@ export default function Profile() {
           </CardContent>
         </Card>
         
+        <Card className="shadow-sm mt-6">
+          <CardContent className="p-4 text-center">
+            <button 
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  const dbUser = await getUserByClerkId(user.id);
+                  if (dbUser) {
+                    const result = await calculateUserCompletionRate(dbUser.id);
+                    console.log("User completion rate result:", result);
+                    alert(`Your Completion Rate: ${result.completion_rate}%\nCompleted: ${result.completed_days}/${result.total_active_days} days`);
+                  }
+                } catch (error) {
+                  console.error("Test failed:", error);
+                  alert("Test failed - check console");
+                }
+              }}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm"
+            >
+              Test My Completion Rate
+            </button>
+
+            <button 
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  const dbUser = await getUserByClerkId(user.id);
+                  if (dbUser) {
+                    const result = await calculateUserTotalPoints(dbUser.id);
+                    console.log("User total points result:", result);
+                    alert(`Your Total Points: ${result} points`);
+                  }
+                } catch (error) {
+                  console.error("Test failed:", error);
+                  alert("Test failed - check console");
+                }
+              }}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-md text-sm mt-2"
+            >
+              Test My Total Points
+            </button>
+
+            <button 
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  const dbUser = await getUserByClerkId(user.id);
+                  if (dbUser) {
+                    const result = await calculateUserDaysActive(dbUser.id);
+                    console.log("User days active result:", result);
+                    alert(`Your Days Active: ${result} days`);
+                  }
+                } catch (error) {
+                  console.error("Test failed:", error);
+                  alert("Test failed - check console");
+                }
+              }}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-md text-sm mt-2"
+            >
+              Test My Days Active
+            </button>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-sm mt-6">
           <CardContent className="p-4 text-center">
             <SignOutButton>
