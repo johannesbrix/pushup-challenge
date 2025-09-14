@@ -228,15 +228,25 @@ export async function calculateUserCompletionRate(user_id: string) {
         points: submissions.points,
       })
       .from(submissions)
-      .where(eq(submissions.user_id, user_id));
+      .where(eq(submissions.user_id, user_id))
+      .orderBy(submissions.submission_date);
     
     if (userSubmissions.length === 0) {
       return {
         completed_days: 0,
-        total_active_days: 0,
+        total_challenge_days: 0,
         completion_rate: 0,
       };
     }
+    
+    // Find first submission date (challenge start)
+    const firstSubmissionDate = userSubmissions[0].submission_date;
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Calculate total days since challenge started
+    const startDate = new Date(firstSubmissionDate);
+    const currentDate = new Date(today);
+    const totalChallengeDays = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
     // Group by date and sum points per day
     const dailyTotals: Record<string, number> = {};
@@ -249,23 +259,21 @@ export async function calculateUserCompletionRate(user_id: string) {
       dailyTotals[date] += submission.points;
     });
     
-    // Calculate completion rate
+    // Count completed days (days with 1+ points)
     let completedDays = 0;
-    const totalActiveDays = Object.keys(dailyTotals).length;
-    
     Object.values(dailyTotals).forEach((dailyTotal) => {
       if (dailyTotal >= 1.0) {
         completedDays += 1;
       }
     });
     
-    const completionRate = totalActiveDays > 0 ? (completedDays / totalActiveDays) * 100 : 0;
+    const completionRate = totalChallengeDays > 0 ? (completedDays / totalChallengeDays) * 100 : 0;
     
-    console.log(`Server Action: User completion rate - ${completedDays}/${totalActiveDays} = ${completionRate.toFixed(1)}%`);
+    console.log(`Server Action: User completion rate - ${completedDays}/${totalChallengeDays} = ${completionRate.toFixed(1)}%`);
     
     return {
       completed_days: completedDays,
-      total_active_days: totalActiveDays,
+      total_challenge_days: totalChallengeDays,
       completion_rate: Math.round(completionRate * 10) / 10,
     };
   } catch (error) {
@@ -335,5 +343,88 @@ export async function calculateUserDaysActive(user_id: string) {
   } catch (error) {
     console.error("Server Action Error (calculateUserDaysActive):", error);
     throw new Error("Failed to calculate user days active.");
+  }
+}
+
+export async function calculateUserDayStreak(user_id: string) {
+  try {
+    console.log(`Server Action: Calculating day streak for user ${user_id}...`);
+    
+    const userSubmissions = await db
+      .select({
+        submission_date: submissions.submission_date,
+        points: submissions.points,
+      })
+      .from(submissions)
+      .where(eq(submissions.user_id, user_id))
+      .orderBy(desc(submissions.submission_date));
+    
+    if (userSubmissions.length === 0) {
+      return 0;
+    }
+    
+    // Group by date and sum points per day
+    const dailyTotals: Record<string, number> = {};
+    
+    userSubmissions.forEach((submission) => {
+      const date = submission.submission_date;
+      if (!dailyTotals[date]) {
+        dailyTotals[date] = 0;
+      }
+      dailyTotals[date] += submission.points;
+    });
+    
+    // Get sorted dates (most recent first)
+    const sortedDates = Object.keys(dailyTotals).sort().reverse();
+    
+    // Check if the most recent successful day is today or yesterday
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Find most recent day with 1+ points
+    let mostRecentSuccessDay = null;
+    for (const date of sortedDates) {
+      if (dailyTotals[date] >= 1.0) {
+        mostRecentSuccessDay = date;
+        break;
+      }
+    }
+    
+    // If no successful day found, or most recent success is not today/yesterday, streak is 0
+    if (!mostRecentSuccessDay || (mostRecentSuccessDay !== today && mostRecentSuccessDay !== yesterday)) {
+      console.log(`Server Action: Streak broken - most recent success: ${mostRecentSuccessDay}`);
+      return 0;
+    }
+    
+    // Count consecutive days with 1+ points from most recent successful day
+    let streak = 0;
+    for (let i = 0; i < sortedDates.length; i++) {
+      const currentDate = sortedDates[i];
+      const dailyTotal = dailyTotals[currentDate];
+      
+      if (dailyTotal >= 1.0) {
+        streak++;
+      } else {
+        break;
+      }
+      
+      // Check for date gaps
+      if (i < sortedDates.length - 1) {
+        const nextDate = sortedDates[i + 1];
+        const currentDateObj = new Date(currentDate);
+        const nextDateObj = new Date(nextDate);
+        const dayDifference = Math.floor((currentDateObj.getTime() - nextDateObj.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (dayDifference > 1) {
+          break;
+        }
+      }
+    }
+    
+    console.log(`Server Action: Current day streak: ${streak} days`);
+    return streak;
+  } catch (error) {
+    console.error("Server Action Error (calculateUserDayStreak):", error);
+    throw new Error("Failed to calculate user day streak.");
   }
 }

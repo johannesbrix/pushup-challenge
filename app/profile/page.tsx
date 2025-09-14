@@ -7,7 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { SignOutButton } from "@clerk/nextjs";
 import { createHabit, getHabitsByUserId, updateHabit } from "@/actions/habits-actions";
 import { getUserByClerkId } from "@/actions/users-actions";
-import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive } from "@/actions/submissions-actions";
+import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive, calculateUserDayStreak } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 
 export default function Profile() {
@@ -221,7 +221,7 @@ export default function Profile() {
                   if (dbUser) {
                     const result = await calculateUserCompletionRate(dbUser.id);
                     console.log("User completion rate result:", result);
-                    alert(`Your Completion Rate: ${result.completion_rate}%\nCompleted: ${result.completed_days}/${result.total_active_days} days`);
+                    alert(`Your Completion Rate: ${result.completion_rate}%\nCompleted: ${result.completed_days}/${result.total_challenge_days} days`);
                   }
                 } catch (error) {
                   console.error("Test failed:", error);
@@ -271,6 +271,26 @@ export default function Profile() {
               className="w-full bg-purple-600 text-white py-2 px-4 rounded-md text-sm mt-2"
             >
               Test My Days Active
+            </button>
+
+            <button 
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  const dbUser = await getUserByClerkId(user.id);
+                  if (dbUser) {
+                    const result = await calculateUserDayStreak(dbUser.id);
+                    console.log("User day streak result:", result);
+                    alert(`Your Day Streak: ${result} days`);
+                  }
+                } catch (error) {
+                  console.error("Test failed:", error);
+                  alert("Test failed - check console");
+                }
+              }}
+              className="w-full bg-orange-600 text-white py-2 px-4 rounded-md text-sm mt-2"
+            >
+              Test My Day Streak
             </button>
           </CardContent>
         </Card>
