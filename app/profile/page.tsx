@@ -9,6 +9,7 @@ import { createHabit, getHabitsByUserId, updateHabit } from "@/actions/habits-ac
 import { getUserByClerkId } from "@/actions/users-actions";
 import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive, calculateUserDayStreak } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
   const { habitData, updateHabit: updateHabitContext, isLoading: contextLoading } = useHabit();
@@ -212,8 +213,30 @@ export default function Profile() {
             <CardTitle className="text-lg">Your Progress</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {statsLoading ? (
-              <p className="text-center text-gray-600">Loading your stats...</p>
+          {statsLoading ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-20 mx-auto" />
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-24 mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-orange-50 rounded-lg">
+                    <Skeleton className="h-8 w-12 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-16 mx-auto" />
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <Skeleton className="h-8 w-12 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-18 mx-auto" />
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4">
