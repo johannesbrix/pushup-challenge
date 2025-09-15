@@ -200,7 +200,7 @@ export default function Home() {
           ) : (
             recentSubmissions.map((submission: any) => {
               const isGoalReached = submission.points >= 1.0;
-              const userName = submission.user_first_name || "Someone";
+              const userName = `${submission.user_first_name || "Someone"} ${submission.user_last_name || ""}`.trim();
               
               return (
                 <Card 

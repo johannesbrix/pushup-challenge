@@ -204,7 +204,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
             <div className="flex items-center space-x-3">
               <span className="text-lg font-bold text-gray-600">{medal}</span>
               <div>
-                <p className="font-medium text-sm">{user.name}</p>
+                <p className="font-medium text-sm">{user.name.length > 25 ? user.name.substring(0, 25) + "..." : user.name}</p>
                 <p className="text-xs text-gray-600">{user.total_score} points</p>
               </div>
             </div>

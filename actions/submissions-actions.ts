@@ -101,7 +101,7 @@ export async function calculateLeaderboard() {
       
       leaderboard.push({
         user_id: user.user_id,
-        name: user.user_first_name || "Anonymous",
+        name: `${user.user_first_name || "Anonymous"} ${user.user_last_name || ""}`.trim(),
         total_score: totalScore,
       });
     }
