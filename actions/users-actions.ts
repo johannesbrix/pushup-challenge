@@ -75,3 +75,37 @@ export async function getUserByClerkId(clerk_id: string) {
     throw new Error("Failed to fetch user.");
   }
 }
+
+export async function updateUserNames({
+  clerk_id,
+  first_name,
+  last_name,
+}: {
+  clerk_id: string;
+  first_name: string;
+  last_name: string;
+}) {
+  try {
+    console.log("Server Action: Updating user names...");
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        first_name,
+        last_name,
+        updated_at: new Date(),
+      })
+      .where(eq(users.clerk_id, clerk_id))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error("User not found for update.");
+    }
+    
+    console.log("Server Action: User names updated:", updatedUser);
+    return updatedUser;
+  } catch (error) {
+    console.error("Server Action Error (updateUserNames):", error);
+    throw new Error("Failed to update user names.");
+  }
+}

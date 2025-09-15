@@ -10,6 +10,7 @@ import { getUserByClerkId } from "@/actions/users-actions";
 import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive, calculateUserDayStreak } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 import { Skeleton } from "@/components/ui/skeleton";
+import { updateUserNames } from "@/actions/users-actions";
 
 export default function Profile() {
   const { habitData, updateHabit: updateHabitContext, isLoading: contextLoading } = useHabit();
@@ -30,6 +31,10 @@ export default function Profile() {
     daysActive: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [namesLoading, setNamesLoading] = useState(true);
+  const [namesSaved, setNamesSaved] = useState(false);
 
   // Initialize form with context data only once when context loads
   useEffect(() => {
@@ -88,6 +93,27 @@ export default function Profile() {
     }
     
     loadUserStats();
+  }, [user]);
+
+  // Load current user names
+  useEffect(() => {
+    async function loadUserNames() {
+      if (!user) return;
+      
+      try {
+        const dbUser = await getUserByClerkId(user.id);
+        if (dbUser) {
+          setFirstName(dbUser.first_name || "");
+          setLastName(dbUser.last_name || "");
+        }
+      } catch (error) {
+        console.error("Failed to load user names:", error);
+      } finally {
+        setNamesLoading(false);
+      }
+    }
+    
+    loadUserNames();
   }, [user]);
   
   return (
@@ -266,12 +292,91 @@ export default function Profile() {
         </Card>
 
         <Card className="shadow-sm mt-6">
-          <CardContent className="p-4 text-center">
-            <SignOutButton>
-              <button className="w-full bg-red-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
-                Sign Out
-              </button>
-            </SignOutButton>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Account Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Display Name Section */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800 mb-4">Display Name</h3>
+              {namesLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">First Name</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your first name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Last Name</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {!namesSaved ? (
+                    <button 
+                      onClick={async () => {
+                        if (!user) return;
+                        try {
+                          await updateUserNames({
+                            clerk_id: user.id,
+                            first_name: firstName,
+                            last_name: lastName,
+                          });
+                          setNamesSaved(true);
+                        } catch (error) {
+                          console.error("Failed to update names:", error);
+                          alert("Failed to update names. Please try again.");
+                        }
+                      }}
+                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                    >
+                      Save Names
+                    </button>
+                  ) : (
+                    <div className="text-center">
+                      <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-3">
+                        ✅ Names updated successfully!
+                      </div>
+                      <button 
+                        onClick={() => setNamesSaved(false)}
+                        className="w-full bg-gray-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                      >
+                        Edit Names
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200"></div>
+
+            {/* Sign Out Section */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800 mb-4">Account Actions</h3>
+              <SignOutButton>
+                <button className="w-full bg-red-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+                  Sign Out
+                </button>
+              </SignOutButton>
+            </div>
           </CardContent>
         </Card>
 

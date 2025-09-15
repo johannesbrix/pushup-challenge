@@ -94,7 +94,14 @@ export default function Leaderboard() {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-800 mb-2">🔥 Keep Going!</p>
-              <p className="text-xs text-gray-600">{motivationalMessage || "Loading motivation..."}</p>
+              {motivationalMessage ? (
+                <p className="text-xs text-gray-600">{motivationalMessage}</p>
+              ) : (
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-48 mx-auto" />
+                  <Skeleton className="h-3 w-32 mx-auto" />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
