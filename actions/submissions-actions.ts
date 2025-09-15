@@ -496,3 +496,46 @@ export async function getDailyMotivationalMessage() {
   
   return messages[messageIndex];
 }
+
+export async function calculateChallengeProgress(user_id: string) {
+  try {
+    console.log(`Server Action: Calculating challenge progress for user ${user_id}...`);
+    
+    const firstSubmission = await db
+      .select({ submission_date: submissions.submission_date })
+      .from(submissions)
+      .where(eq(submissions.user_id, user_id))
+      .orderBy(submissions.submission_date)
+      .limit(1);
+    
+    if (firstSubmission.length === 0) {
+      return {
+        day: 0,
+        week: 0,
+        message: "Start your first activity!"
+      };
+    }
+    
+    const startDate = new Date(firstSubmission[0].submission_date);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const week = Math.floor((daysDiff - 1) / 7) + 1;
+    
+    // Generate milestone messages
+    let message = "Keep building";
+    if (daysDiff === 7) message = "First week complete!";
+    else if (daysDiff === 14) message = "Two weeks strong";
+    else if (daysDiff === 21) message = "Habit forming";
+    else if (daysDiff === 30) message = "One month milestone";
+    else if (daysDiff >= 7 && daysDiff % 7 === 0) message = `${week} weeks of progress`;
+    
+    return {
+      day: daysDiff,
+      week: week,
+      message: message
+    };
+  } catch (error) {
+    console.error("Server Action Error (calculateChallengeProgress):", error);
+    throw new Error("Failed to calculate challenge progress.");
+  }
+}
