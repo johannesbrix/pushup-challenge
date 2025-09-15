@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, calculateGroupPoints, generateMotivationalMessage } from "@/actions/submissions-actions";
+import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, calculateGroupPoints, generateMotivationalMessage, getDailyMotivationalMessage } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/actions/users-actions";
@@ -16,6 +16,13 @@ export default function Leaderboard() {
   const [groupPoints, setGroupPoints] = useState(0);
   const [motivationalMessage, setMotivationalMessage] = useState("");
   const [statsLoading, setStatsLoading] = useState(true);
+  const [dailyMessage, setDailyMessage] = useState("...");
+
+  // Load daily motivational message
+  useEffect(() => {
+    const message = getDailyMotivationalMessage();
+    setDailyMessage(message);
+  }, []);
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -25,7 +32,7 @@ export default function Leaderboard() {
           <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full inline-block">
             <span className="font-semibold text-sm">Week 2 • Day 10</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Challenge Progress</p>
+          <p className="text-xs text-gray-500 mt-1">{dailyMessage}</p>
         </div>
 
         <Card className="shadow-sm">

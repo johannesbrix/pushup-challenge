@@ -455,3 +455,44 @@ export async function generateMotivationalMessage(user_id: string) {
     return "Keep up the great work on your daily habit!";
   }
 }
+
+export async function getDailyMotivationalMessage() {
+  const messages = [
+    "Every small step counts toward building lasting habits",
+    "Consistency beats perfection every time",
+    "You're building something meaningful with each day",
+    "Progress isn't always visible, but it's always happening",
+    "One day at a time builds extraordinary results",
+    "Your future self will thank you for today's effort",
+    "Small habits compound into big transformations",
+    "Each day is a fresh chance to move forward",
+    "You're stronger than you think you are",
+    "Building habits is building a better version of yourself",
+    "Today's effort is tomorrow's strength",
+    "Persistence is the key that unlocks potential",
+    "You don't have to be perfect, just consistent",
+    "Every habit you build makes the next one easier",
+    "You're creating positive change one day at a time",
+    "Focus on progress, not perfection",
+    "Your commitment today shapes your future",
+    "Small wins add up to big victories",
+    "You're developing the discipline that will serve you for life",
+    "Each consistent day builds unshakeable confidence",
+    "You're proving to yourself that you can do hard things",
+    "Habits are the foundation of the person you're becoming",
+    "Today is another opportunity to invest in yourself",
+    "You're building momentum with every single day",
+    "Consistency is your superpower",
+    "You're writing your success story one day at a time",
+    "Every day you show up, you're getting stronger",
+    "Your dedication is shaping your character",
+    "You're building the life you want through daily choices",
+    "Trust the process - you're making real progress"
+  ];
+  
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const messageIndex = dayOfMonth % messages.length;
+  
+  return messages[messageIndex];
+}

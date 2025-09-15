@@ -12,7 +12,7 @@ import { createSubmission } from "@/actions/submissions-actions";
 import { getUserByClerkId } from "@/actions/users-actions";
 import { getHabitsByUserId } from "@/actions/habits-actions";
 import BottomNav from "@/components/bottom-nav";
-import { getRecentSubmissions } from "@/actions/submissions-actions";
+import { getRecentSubmissions, getDailyMotivationalMessage } from "@/actions/submissions-actions";
 
 export default function Home() {
   const { habitData } = useHabit();
@@ -26,6 +26,7 @@ export default function Home() {
   const points = (minutes[0] / dailyGoal).toFixed(1);
   const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
+  const [dailyMessage, setDailyMessage] = useState("...");
 
   function formatTimeAgo(dateString: string) {
     const now = new Date();
@@ -78,6 +79,12 @@ export default function Home() {
     }
   }, [habitData.dailyGoal, isLoading]);
 
+  // Load daily motivational message
+  useEffect(() => {
+    const message = getDailyMotivationalMessage();
+    setDailyMessage(message);
+  }, []);
+
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-sm mx-auto px-4 pt-6">
@@ -86,7 +93,7 @@ export default function Home() {
           <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full inline-block">
             <span className="font-semibold text-sm">Week 2 • Day 10</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">36 days remaining</p>
+          <p className="text-xs text-gray-500 mt-1">{dailyMessage}</p>
         </div>
 
         <Card className="shadow-sm">
