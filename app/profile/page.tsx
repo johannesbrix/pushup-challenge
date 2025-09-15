@@ -30,9 +30,6 @@ export default function Profile() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Check if user is new
-  const isNewUser = !localStorage.getItem('habitSaved');
-
   // Initialize form with context data only once when context loads
   useEffect(() => {
     if (!contextLoading && habitData) {
@@ -100,15 +97,6 @@ export default function Profile() {
           <h1 className="text-xl font-bold text-gray-800">Your Profile</h1>
           <p className="text-sm text-gray-600 mt-1">Manage your habit challenge</p>
         </div>
-
-        {isNewUser && (
-          <Card className="shadow-sm mb-6 bg-blue-50 border-blue-200">
-            <CardContent className="p-4 text-center">
-              <h2 className="font-semibold text-blue-800 mb-2">Welcome to your 6-week challenge!</h2>
-              <p className="text-sm text-blue-700">Set up your daily habit below to get started. You'll track this same habit for 6 weeks with your friends.</p>
-            </CardContent>
-          </Card>
-        )}
 
         <Card className="shadow-sm">
           <CardHeader className="pb-4">
@@ -184,7 +172,6 @@ export default function Profile() {
                       
                       // Update context and UI
                       updateHabitContext({ habitName, habitUnit, dailyGoal });
-                      localStorage.setItem('habitSaved', 'true');
                       setSavedHabitName(habitName);
                       setSavedHabitUnit(habitUnit);
                       setSavedDailyGoal(dailyGoal);
