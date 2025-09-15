@@ -7,6 +7,7 @@ import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, c
 import BottomNav from "@/components/bottom-nav";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/actions/users-actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Leaderboard() {
   const { user } = useUser();
@@ -14,6 +15,7 @@ export default function Leaderboard() {
   const [totalFriends, setTotalFriends] = useState(0);
   const [groupPoints, setGroupPoints] = useState(0);
   const [motivationalMessage, setMotivationalMessage] = useState("");
+  const [statsLoading, setStatsLoading] = useState(true);
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -48,21 +50,43 @@ export default function Leaderboard() {
             <CardTitle className="text-lg">Challenge Stats</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-xl font-bold text-blue-600">{totalFriends}</p>
-                <p className="text-xs text-gray-600">Total Friends</p>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-xl font-bold text-green-600">{groupPoints}</p>
-                <p className="text-xs text-gray-600">Group Points</p>
-              </div>
-            </div>
-            
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <p className="text-xl font-bold text-purple-600">{completionRate}%</p>
-              <p className="text-xs text-gray-600">Average Completion Rate</p>
-            </div>
+            {totalFriends === 0 && completionRate === 0 && groupPoints === 0 ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <Skeleton className="h-6 w-8 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-20 mx-auto" />
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <Skeleton className="h-6 w-12 mx-auto mb-2" />
+                    <Skeleton className="h-3 w-24 mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                  <Skeleton className="h-3 w-20 mx-auto" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xl font-bold text-blue-600">{totalFriends}</p>
+                    <p className="text-xs text-gray-600">Total Friends</p>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <p className="text-xl font-bold text-purple-600">{completionRate}%</p>
+                    <p className="text-xs text-gray-600">Completion Rate</p>
+                  </div>
+                </div>
+                
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600">{groupPoints}</p>
+                  <p className="text-xs text-gray-600">Group Points</p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -122,7 +146,22 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
   }, [onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, user]);
 
   if (isLoading) {
-    return <p className="text-center text-gray-600">Loading rankings...</p>;
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Skeleton className="h-6 w-6 rounded" />
+              <div>
+                <Skeleton className="h-4 w-20 mb-1" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+            <Skeleton className="h-4 w-8" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (leaderboard.length === 0) {
