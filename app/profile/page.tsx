@@ -22,7 +22,17 @@ export default function Profile() {
   const [savedDailyGoal, setSavedDailyGoal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [dbUserId, setDbUserId] = useState<string>("");
-  
+  const [userStats, setUserStats] = useState({
+    totalPoints: 0,
+    completionRate: 0,
+    dayStreak: 0,
+    daysActive: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Check if user is new
+  const isNewUser = !localStorage.getItem('habitSaved');
+
   // Initialize form with context data only once when context loads
   useEffect(() => {
     if (!contextLoading && habitData) {
@@ -50,8 +60,37 @@ export default function Profile() {
     getDbUserId();
   }, [user]);
 
-  // Check if user is new
-  const isNewUser = !localStorage.getItem('habitSaved');
+  // Load user stats
+  useEffect(() => {
+    async function loadUserStats() {
+      if (!user) return;
+      
+      try {
+        const dbUser = await getUserByClerkId(user.id);
+        if (dbUser) {
+          const [totalPoints, completionData, dayStreak, daysActive] = await Promise.all([
+            calculateUserTotalPoints(dbUser.id),
+            calculateUserCompletionRate(dbUser.id),
+            calculateUserDayStreak(dbUser.id),
+            calculateUserDaysActive(dbUser.id)
+          ]);
+          
+          setUserStats({
+            totalPoints,
+            completionRate: completionData.completion_rate,
+            dayStreak,
+            daysActive,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load user stats:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+    
+    loadUserStats();
+  }, [user]);
   
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -78,7 +117,7 @@ export default function Profile() {
           <CardContent className="space-y-6">
             <div>
               <label className="text-sm font-medium mb-2 block">What habit do you want to build?</label>
-<input
+                <input
                 type="text"
                 placeholder="e.g., reading, pushups, meditation"
                 value={habitName}
@@ -186,112 +225,33 @@ export default function Profile() {
             <CardTitle className="text-lg">Your Progress</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">15.5</p>
-                <p className="text-xs text-gray-600">Total Points</p>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">78%</p>
-                <p className="text-xs text-gray-600">Completion Rate</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">7</p>
-                <p className="text-xs text-gray-600">Day Streak</p>
-              </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                <p className="text-2xl font-bold text-purple-600">12</p>
-                <p className="text-xs text-gray-600">Days Active</p>
-              </div>
-            </div>
-
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-sm mt-6">
-          <CardContent className="p-4 text-center">
-            <button 
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const dbUser = await getUserByClerkId(user.id);
-                  if (dbUser) {
-                    const result = await calculateUserCompletionRate(dbUser.id);
-                    console.log("User completion rate result:", result);
-                    alert(`Your Completion Rate: ${result.completion_rate}%\nCompleted: ${result.completed_days}/${result.total_challenge_days} days`);
-                  }
-                } catch (error) {
-                  console.error("Test failed:", error);
-                  alert("Test failed - check console");
-                }
-              }}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm"
-            >
-              Test My Completion Rate
-            </button>
-
-            <button 
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const dbUser = await getUserByClerkId(user.id);
-                  if (dbUser) {
-                    const result = await calculateUserTotalPoints(dbUser.id);
-                    console.log("User total points result:", result);
-                    alert(`Your Total Points: ${result} points`);
-                  }
-                } catch (error) {
-                  console.error("Test failed:", error);
-                  alert("Test failed - check console");
-                }
-              }}
-              className="w-full bg-green-600 text-white py-2 px-4 rounded-md text-sm mt-2"
-            >
-              Test My Total Points
-            </button>
-
-            <button 
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const dbUser = await getUserByClerkId(user.id);
-                  if (dbUser) {
-                    const result = await calculateUserDaysActive(dbUser.id);
-                    console.log("User days active result:", result);
-                    alert(`Your Days Active: ${result} days`);
-                  }
-                } catch (error) {
-                  console.error("Test failed:", error);
-                  alert("Test failed - check console");
-                }
-              }}
-              className="w-full bg-purple-600 text-white py-2 px-4 rounded-md text-sm mt-2"
-            >
-              Test My Days Active
-            </button>
-
-            <button 
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const dbUser = await getUserByClerkId(user.id);
-                  if (dbUser) {
-                    const result = await calculateUserDayStreak(dbUser.id);
-                    console.log("User day streak result:", result);
-                    alert(`Your Day Streak: ${result} days`);
-                  }
-                } catch (error) {
-                  console.error("Test failed:", error);
-                  alert("Test failed - check console");
-                }
-              }}
-              className="w-full bg-orange-600 text-white py-2 px-4 rounded-md text-sm mt-2"
-            >
-              Test My Day Streak
-            </button>
+            {statsLoading ? (
+              <p className="text-center text-gray-600">Loading your stats...</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{userStats.totalPoints}</p>
+                    <p className="text-xs text-gray-600">Total Points</p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">{userStats.completionRate}%</p>
+                    <p className="text-xs text-gray-600">Completion Rate</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-orange-50 rounded-lg">
+                    <p className="text-2xl font-bold text-orange-600">{userStats.dayStreak}</p>
+                    <p className="text-xs text-gray-600">Day Streak</p>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <p className="text-2xl font-bold text-purple-600">{userStats.daysActive}</p>
+                    <p className="text-xs text-gray-600">Days Active</p>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

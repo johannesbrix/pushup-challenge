@@ -402,3 +402,56 @@ export async function calculateUserDayStreak(user_id: string) {
     throw new Error("Failed to calculate user day streak.");
   }
 }
+
+export async function generateMotivationalMessage(user_id: string) {
+  try {
+    console.log(`Server Action: Generating motivational message for user ${user_id}...`);
+    
+    const leaderboard = await calculateLeaderboard();
+    
+    if (leaderboard.length === 0) {
+      return "Start logging your progress to see how you're doing!";
+    }
+    
+    // Find current user's position
+    const userIndex = leaderboard.findIndex(user => user.user_id === user_id);
+    
+    if (userIndex === -1) {
+      return "Log your first activity to join the leaderboard!";
+    }
+    
+    const currentUser = leaderboard[userIndex];
+    const totalUsers = leaderboard.length;
+    
+    // Single user case
+    if (totalUsers === 1) {
+      return "You're building momentum! Keep up the consistency.";
+    }
+    
+    // First place
+    if (userIndex === 0) {
+      const secondPlace = leaderboard[1];
+      const pointLead = Math.round((currentUser.total_score - secondPlace.total_score) * 10) / 10;
+      return `You're leading the pack! You're ${pointLead} points ahead of ${secondPlace.name}. Stay consistent to keep your edge.`;
+    }
+    
+    // Last place
+    if (userIndex === totalUsers - 1) {
+      return "Every point counts! Focus on building your daily streak - you've got this.";
+    }
+    
+    // Middle positions
+    const userAbove = leaderboard[userIndex - 1];
+    const pointsToClose = Math.round((userAbove.total_score - currentUser.total_score) * 10) / 10;
+    
+    if (pointsToClose <= 3) {
+      return `You're ${pointsToClose} points behind ${userAbove.name} - totally catchable with a few good days!`;
+    } else {
+      return `Keep building momentum! You're making progress and every consistent day matters.`;
+    }
+    
+  } catch (error) {
+    console.error("Server Action Error (generateMotivationalMessage):", error);
+    return "Keep up the great work on your daily habit!";
+  }
+}

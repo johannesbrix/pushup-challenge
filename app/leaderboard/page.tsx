@@ -3,13 +3,17 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, calculateGroupPoints } from "@/actions/submissions-actions";
+import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, calculateGroupPoints, generateMotivationalMessage } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
+import { useUser } from "@clerk/nextjs";
+import { getUserByClerkId } from "@/actions/users-actions";
 
 export default function Leaderboard() {
+  const { user } = useUser();
   const [completionRate, setCompletionRate] = useState(0);
   const [totalFriends, setTotalFriends] = useState(0);
   const [groupPoints, setGroupPoints] = useState(0);
+  const [motivationalMessage, setMotivationalMessage] = useState("");
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -33,6 +37,8 @@ export default function Leaderboard() {
                 setTotalFriends(friends);
                 setGroupPoints(points);
               }}
+              onMotivationalMessageLoad={setMotivationalMessage}
+              user={user}
             />
           </CardContent>
         </Card>
@@ -64,7 +70,7 @@ export default function Leaderboard() {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-sm font-medium text-gray-800 mb-2">🔥 Keep Going!</p>
-              <p className="text-xs text-gray-600">You're doing great! Sarah is only 10 points ahead - you can catch up!</p>
+              <p className="text-xs text-gray-600">{motivationalMessage || "Loading motivation..."}</p>
             </div>
           </CardContent>
         </Card>
@@ -75,9 +81,11 @@ export default function Leaderboard() {
   );
 }
 
-function LeaderboardList({ onCompletionRateLoad, onStatsLoad }: { 
+function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, user }: { 
   onCompletionRateLoad: (rate: number) => void;
   onStatsLoad: (friends: number, points: number) => void;
+  onMotivationalMessageLoad: (message: string) => void;
+  user: any;
 }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +102,15 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad }: {
         setLeaderboard(leaderboardData);
         onCompletionRateLoad(completionData.completion_rate);
         onStatsLoad(friendsData, pointsData);
+        
+        // Load motivational message if user is available
+        if (user) {
+          const dbUser = await getUserByClerkId(user.id);
+          if (dbUser) {
+            const message = await generateMotivationalMessage(dbUser.id);
+            onMotivationalMessageLoad(message);
+          }
+        }
       } catch (error) {
         console.error("Failed to load data:", error);
       } finally {
@@ -102,7 +119,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad }: {
     }
     
     loadData();
-  }, [onCompletionRateLoad, onStatsLoad]);
+  }, [onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, user]);
 
   if (isLoading) {
     return <p className="text-center text-gray-600">Loading rankings...</p>;
