@@ -9,7 +9,6 @@ export const submissions = pgTable("submissions", {
   submission_date: date("submission_date").notNull(),
   actual_amount: real("actual_amount").notNull(),
   points: real("points").notNull(),
-  perceived_rating: text("perceived_rating").notNull(),
   note: text("note"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),

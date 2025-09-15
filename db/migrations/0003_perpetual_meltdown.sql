@@ -1,0 +1,1 @@
+ALTER TABLE "submissions" DROP COLUMN "perceived_rating";

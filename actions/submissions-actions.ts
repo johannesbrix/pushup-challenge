@@ -17,7 +17,6 @@ export async function getRecentSubmissions(limit: number = 10) {
           submission_date: submissions.submission_date,
           actual_amount: submissions.actual_amount,
           points: submissions.points,
-          perceived_rating: submissions.perceived_rating,
           note: submissions.note,
           created_at: submissions.created_at,
           // Join with users and habits to get names
@@ -47,7 +46,6 @@ export async function createSubmission({
   submission_date,
   actual_amount,
   points,
-  perceived_rating,
   note,
 }: {
   user_id: string;
@@ -55,7 +53,6 @@ export async function createSubmission({
   submission_date: string; // Format: "2025-01-15"
   actual_amount: number;
   points: number;
-  perceived_rating: string;
   note?: string;
 }) {
   try {
@@ -69,7 +66,6 @@ export async function createSubmission({
         submission_date,
         actual_amount,
         points,
-        perceived_rating,
         note: note || null,
       })
       .returning();
