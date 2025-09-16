@@ -23,8 +23,22 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false); 
   const dailyGoal = parseInt(habitData.dailyGoal);
   const points = (minutes[0] / dailyGoal).toFixed(1);
-  const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
+  interface RecentSubmission {
+    id: string;
+    submission_date: string;
+    actual_amount: number;
+    points: number;
+    note: string | null;
+    created_at: Date;
+    user_first_name: string | null;
+    user_last_name: string | null;
+    habit_name: string | null;
+    habit_unit: string | null;
+    habit_daily_goal: number | null;
+  }
+  
+  const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
 
   function formatTimeAgo(dateString: string) {
     const now = new Date();
@@ -204,7 +218,7 @@ export default function Home() {
               </CardContent>
             </Card>
           ) : (
-            recentSubmissions.map((submission: { id: string; user_first_name: string; user_last_name: string; actual_amount: number; habit_unit: string; habit_name: string; points: number; note?: string; created_at: string }) => {
+            recentSubmissions.map((submission: RecentSubmission) => {
               const isGoalReached = submission.points >= 1.0;
               const userName = `${submission.user_first_name || "Someone"} ${submission.user_last_name || ""}`.trim();
               
@@ -229,7 +243,7 @@ export default function Home() {
                         )}
                       </div>
                       <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
-                        {formatTimeAgo(submission.created_at)}
+                        {formatTimeAgo(submission.created_at.toISOString())}
                       </span>
                     </div>
                   </CardContent>
