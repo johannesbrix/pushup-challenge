@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { calculateLeaderboard, calculateCompletionRate, calculateTotalFriends, calculateGroupPoints, generateMotivationalMessage } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 import { useUser } from "@clerk/nextjs";
@@ -119,7 +118,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
   onCompletionRateLoad: (rate: number) => void;
   onStatsLoad: (friends: number, points: number) => void;
   onMotivationalMessageLoad: (message: string) => void;
-  user: any;
+  user: { id: string } | null;
 }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -180,7 +179,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
 
   return (
     <div className="space-y-3">
-      {leaderboard.map((user: any, index) => {
+      {leaderboard.map((user: { user_id: string; name: string; total_score: number }, index) => {
         const isFirst = index === 0;
         const isSecond = index === 1;
         const isThird = index === 2;

@@ -198,7 +198,7 @@ export default function Home() {
               </CardContent>
             </Card>
           ) : (
-            recentSubmissions.map((submission: any) => {
+            recentSubmissions.map((submission: { id: string; user_first_name: string; user_last_name: string; actual_amount: number; habit_unit: string; habit_name: string; points: number; note?: string; created_at: string }) => {
               const isGoalReached = submission.points >= 1.0;
               const userName = `${submission.user_first_name || "Someone"} ${submission.user_last_name || ""}`.trim();
               
@@ -218,7 +218,7 @@ export default function Home() {
                         </p>
                         {submission.note && (
                           <p className="text-xs text-gray-600 mt-1 break-words">
-                            "{submission.note}"
+                            &quot;{submission.note}&quot;
                           </p>
                         )}
                       </div>
