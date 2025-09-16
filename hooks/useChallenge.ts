@@ -13,7 +13,7 @@ export function useChallenge() {
     async function loadChallengeData() {
       try {
         // Load daily message (no user needed)
-        const message = getDailyMotivationalMessage();
+        const message = await getDailyMotivationalMessage();
         setDailyMessage(message);
 
         // Load challenge progress (needs user)
