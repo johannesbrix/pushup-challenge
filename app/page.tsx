@@ -47,6 +47,12 @@ export default function Home() {
     }
   }
 
+  function resetForm() {
+    setIsSubmitted(false);
+    setMessage("");
+    setMinutes([dailyGoal || 30]);
+  }
+
   // Load recent submissions for the feed
   useEffect(() => {
     async function loadSubmissions() {
@@ -89,7 +95,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-medium mb-2">Today's Goal: {dailyGoal} {habitData.habitUnit} {habitData.habitName}</h3>
+              <h3 className="font-medium mb-2">Today&apos;s Goal: {dailyGoal} {habitData.habitUnit} {habitData.habitName}</h3>
               <p className="text-sm text-gray-600">How much did you achieve?</p>
             </div>
             
