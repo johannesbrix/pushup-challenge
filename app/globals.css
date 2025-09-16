@@ -120,21 +120,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Force Clerk SignIn component to be properly centered */
-.cl-signIn-root,
-.cl-rootBox {
-  width: 100% !important;
-  max-width: 400px !important;
-  margin: 0 auto !important;
-}
-
-.cl-card {
-  margin: 0 auto !important;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
-}
-
-/* Ensure the container respects our centering */
-.cl-signIn-root .cl-main {
-  width: 100% !important;
-}
