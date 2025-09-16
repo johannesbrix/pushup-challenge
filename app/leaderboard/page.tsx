@@ -9,6 +9,13 @@ import { useChallenge } from "@/hooks/useChallenge";
 import { getUserByClerkId } from "@/actions/users-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Define types
+interface LeaderboardUser {
+  user_id: string;
+  name: string;
+  total_score: number;
+}
+
 export default function Leaderboard() {
   const { user } = useUser();
   const { dailyMessage, challengeProgress } = useChallenge();
@@ -42,7 +49,7 @@ export default function Leaderboard() {
                 setGroupPoints(points);
               }}
               onMotivationalMessageLoad={setMotivationalMessage}
-              user={user}
+              userId={user?.id || null}
             />
           </CardContent>
         </Card>
@@ -114,13 +121,13 @@ export default function Leaderboard() {
   );
 }
 
-function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, user }: { 
+function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, userId }: { 
   onCompletionRateLoad: (rate: number) => void;
   onStatsLoad: (friends: number, points: number) => void;
   onMotivationalMessageLoad: (message: string) => void;
-  user: { id: string } | null;
+  userId: string | null;
 }) {
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -132,13 +139,13 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
           calculateTotalFriends(),
           calculateGroupPoints()
         ]);
-        setLeaderboard(leaderboardData);
+        setLeaderboard(leaderboardData as LeaderboardUser[]);
         onCompletionRateLoad(completionData.completion_rate);
         onStatsLoad(friendsData, pointsData);
         
         // Load motivational message if user is available
-        if (user) {
-          const dbUser = await getUserByClerkId(user.id);
+        if (userId) {
+          const dbUser = await getUserByClerkId(userId);
           if (dbUser) {
             const message = await generateMotivationalMessage(dbUser.id);
             onMotivationalMessageLoad(message);
@@ -152,7 +159,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
     }
     
     loadData();
-  }, [onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, user]);
+  }, [onCompletionRateLoad, onStatsLoad, onMotivationalMessageLoad, userId]);
 
   if (isLoading) {
     return (
@@ -179,7 +186,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
 
   return (
     <div className="space-y-3">
-      {leaderboard.map((user: { user_id: string; name: string; total_score: number }, index) => {
+      {leaderboard.map((user: LeaderboardUser, index) => {
         const isFirst = index === 0;
         const isSecond = index === 1;
         const isThird = index === 2;
