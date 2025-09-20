@@ -1,5 +1,5 @@
 {
-  "id": "b4b8bbc3-a33e-4425-bfc4-b59ccbf68de3",
+  "id": "84572bc7-915f-45b3-ac96-5be26ef0709f",
   "prevId": "ffe3aeb7-415f-420d-a0dd-8537dccd5500",
   "version": "7",
   "dialect": "postgresql",
@@ -207,6 +207,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "show_on_leaderboard": {
+          "name": "show_on_leaderboard",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "show_posts_in_feed": {
+          "name": "show_posts_in_feed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
         },
         "created_at": {
           "name": "created_at",
