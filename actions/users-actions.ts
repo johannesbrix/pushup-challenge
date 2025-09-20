@@ -47,6 +47,8 @@ export async function createOrUpdateUser({
           email,
           first_name,
           last_name,
+          show_on_leaderboard: true, // Default to public
+          show_posts_in_feed: true,  // Default to public
         })
         .returning();
       
@@ -103,5 +105,37 @@ export async function updateUserNames({
   } catch (error) {
     console.error("Server Action Error (updateUserNames):", error);
     throw new Error("Failed to update user names.");
+  }
+}
+
+export async function updateUserPrivacySettings({
+  clerk_id,
+  show_on_leaderboard,
+  show_posts_in_feed,
+}: {
+  clerk_id: string;
+  show_on_leaderboard: boolean;
+  show_posts_in_feed: boolean;
+}) {
+  try {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        show_on_leaderboard,
+        show_posts_in_feed,
+        updated_at: new Date(),
+      })
+      .where(eq(users.clerk_id, clerk_id))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error("User not found for update.");
+    }
+    
+    console.log("Server Action: User privacy settings updated successfully");
+    return updatedUser;
+  } catch (error) {
+    console.error("Server Action Error (updateUserPrivacySettings):", error);
+    throw new Error("Failed to update user privacy settings.");
   }
 }
