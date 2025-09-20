@@ -10,7 +10,8 @@ import { getUserByClerkId } from "@/actions/users-actions";
 import { calculateUserCompletionRate, calculateUserTotalPoints, calculateUserDaysActive, calculateUserDayStreak } from "@/actions/submissions-actions";
 import BottomNav from "@/components/bottom-nav";
 import { Skeleton } from "@/components/ui/skeleton";
-import { updateUserNames } from "@/actions/users-actions";
+import { updateUserNames, updateUserPrivacySettings } from "@/actions/users-actions";
+import { Switch } from "@/components/ui/switch";
 
 export default function Profile() {
   const { habitData, updateHabit: updateHabitContext, isLoading: contextLoading } = useHabit();
@@ -35,6 +36,10 @@ export default function Profile() {
   const [lastName, setLastName] = useState("");
   const [namesLoading, setNamesLoading] = useState(true);
   const [namesSaved, setNamesSaved] = useState(false);
+  const [showOnLeaderboard, setShowOnLeaderboard] = useState(true);
+  const [showPostsInFeed, setShowPostsInFeed] = useState(true);
+  const [privacyLoading, setPrivacyLoading] = useState(true);
+  const [privacySaved, setPrivacySaved] = useState(false);
 
   // Initialize form with context data only once when context loads
   useEffect(() => {
@@ -114,6 +119,27 @@ export default function Profile() {
     }
     
     loadUserNames();
+  }, [user]);
+
+  // Load current privacy settings
+  useEffect(() => {
+    async function loadPrivacySettings() {
+      if (!user) return;
+      
+      try {
+        const dbUser = await getUserByClerkId(user.id);
+        if (dbUser) {
+          setShowOnLeaderboard(dbUser.show_on_leaderboard ?? true);
+          setShowPostsInFeed(dbUser.show_posts_in_feed ?? true);
+        }
+      } catch (error) {
+        console.error("Failed to load privacy settings");
+      } finally {
+        setPrivacyLoading(false);
+      }
+    }
+    
+    loadPrivacySettings();
   }, [user]);
   
   return (
@@ -358,6 +384,78 @@ export default function Profile() {
                         className="w-full bg-gray-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                       >
                         Edit Names
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200"></div>
+
+            {/* Privacy Settings Section */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800 mb-4">Privacy Settings</h3>
+              {privacyLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">Display on Leaderboard</p>
+                      <p className="text-xs text-gray-600">Show your progress and ranking to other users</p>
+                    </div>
+                    <Switch
+                      checked={showOnLeaderboard}
+                      onCheckedChange={setShowOnLeaderboard}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">Show Posts in Public Feed</p>
+                      <p className="text-xs text-gray-600">Display your activity updates in the public feed</p>
+                    </div>
+                    <Switch
+                      checked={showPostsInFeed}
+                      onCheckedChange={setShowPostsInFeed}
+                    />
+                  </div>
+
+                  {!privacySaved ? (
+                    <button 
+                      onClick={async () => {
+                        if (!user) return;
+                        try {
+                          await updateUserPrivacySettings({
+                            clerk_id: user.id,
+                            show_on_leaderboard: showOnLeaderboard,
+                            show_posts_in_feed: showPostsInFeed,
+                          });
+                          setPrivacySaved(true);
+                        } catch (error) {
+                          console.error("Failed to update privacy settings");
+                          alert("Failed to update privacy settings. Please try again.");
+                        }
+                      }}
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      Save Privacy Settings
+                    </button>
+                  ) : (
+                    <div className="text-center">
+                      <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-3">
+                        ✅ Privacy settings updated successfully!
+                      </div>
+                      <button 
+                        onClick={() => setPrivacySaved(false)}
+                        className="w-full bg-gray-600 text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                      >
+                        Edit Privacy Settings
                       </button>
                     </div>
                   )}
