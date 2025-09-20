@@ -27,6 +27,7 @@ export async function getRecentSubmissions(limit: number = 10) {
         .from(submissions)
         .leftJoin(users, eq(submissions.user_id, users.id))
         .leftJoin(habits, eq(submissions.habit_id, habits.id))
+        .where(eq(users.show_posts_in_feed, true)) // Only show posts from users who allow it
         .orderBy(desc(submissions.created_at))
         .limit(limit);
       
@@ -76,7 +77,7 @@ export async function createSubmission({
 
 export async function calculateLeaderboard() {
   try {
-    // Get all unique users who have submitted
+    // Get all unique users who have submitted and allow leaderboard display
     const uniqueUsers = await db
       .select({
         user_id: submissions.user_id,
@@ -85,6 +86,7 @@ export async function calculateLeaderboard() {
       })
       .from(submissions)
       .leftJoin(users, eq(submissions.user_id, users.id))
+      .where(eq(users.show_on_leaderboard, true)) // Only include users who allow leaderboard display
       .groupBy(submissions.user_id, users.first_name, users.last_name);
     
     // Calculate total points for each user
@@ -115,7 +117,9 @@ export async function calculateCompletionRate() {
   try {
     const uniqueUsers = await db
       .selectDistinct({ user_id: submissions.user_id })
-      .from(submissions);
+      .from(submissions)
+      .leftJoin(users, eq(submissions.user_id, users.id))
+      .where(eq(users.show_on_leaderboard, true)); // Only count users who allow leaderboard display
     
     console.log(`Found ${uniqueUsers.length} users for completion rate calculation`);
     
@@ -147,7 +151,9 @@ export async function calculateTotalFriends() {
   try {
     const uniqueUsers = await db
       .selectDistinct({ user_id: submissions.user_id })
-      .from(submissions);
+      .from(submissions)
+      .leftJoin(users, eq(submissions.user_id, users.id))
+      .where(eq(users.show_on_leaderboard, true)); // Only count users who allow leaderboard display
     
     const totalFriends = uniqueUsers.length;
     console.log(`Server Action: Found ${totalFriends} total friends`);
