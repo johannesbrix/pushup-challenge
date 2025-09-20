@@ -74,7 +74,7 @@ export default function Home() {
         const submissions = await getRecentSubmissions(5); // Get last 5 submissions
         setRecentSubmissions(submissions);
       } catch (error) {
-        console.error("Failed to load submissions:", error);
+        console.error("Failed to load submissions");
       } finally {
         setFeedLoading(false);
       }
@@ -176,7 +176,7 @@ export default function Home() {
                     
                     setIsSubmitted(true);
                   } catch (error) {
-                    console.error("Failed to save submission:", error);
+                    console.error("Failed to save submission");
                     alert("Failed to save progress. Please try again.");
                   } finally {
                     setIsLoading(false);

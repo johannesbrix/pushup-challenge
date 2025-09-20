@@ -152,7 +152,7 @@ function LeaderboardList({ onCompletionRateLoad, onStatsLoad, onMotivationalMess
           }
         }
       } catch (error) {
-        console.error("Failed to load data:", error);
+        console.error("Failed to load data");
       } finally {
         setIsLoading(false);
       }

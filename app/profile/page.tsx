@@ -56,7 +56,7 @@ export default function Profile() {
           setDbUserId(dbUser.id);
         }
       } catch (error) {
-        console.error("Failed to get user ID:", error);
+        console.error("Failed to get user ID");
       }
     }
     
@@ -86,7 +86,7 @@ export default function Profile() {
           });
         }
       } catch (error) {
-        console.error("Failed to load user stats:", error);
+        console.error("Failed to load user stats");
       } finally {
         setStatsLoading(false);
       }
@@ -107,7 +107,7 @@ export default function Profile() {
           setLastName(dbUser.last_name || "");
         }
       } catch (error) {
-        console.error("Failed to load user names:", error);
+        console.error("Failed to load user names");
       } finally {
         setNamesLoading(false);
       }
@@ -204,7 +204,7 @@ export default function Profile() {
                       setSavedDailyGoal(dailyGoal);
                       setIsSaved(true);
                     } catch (error) {
-                      console.error("Failed to save habit:", error);
+                      console.error("Failed to save habit");
                       alert("Failed to save habit. Please try again.");
                     } finally {
                       setIsLoading(false);
@@ -340,7 +340,7 @@ export default function Profile() {
                           });
                           setNamesSaved(true);
                         } catch (error) {
-                          console.error("Failed to update names:", error);
+                          console.error("Failed to update names");
                           alert("Failed to update names. Please try again.");
                         }
                       }}

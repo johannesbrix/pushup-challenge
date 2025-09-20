@@ -52,7 +52,7 @@ export function HabitProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Failed to load habit from database:', error);
+        console.error('Failed to load habit from database');
       } finally {
         setIsLoading(false);
         setHasLoadedFromDB(true); // Mark as loaded so we don't load again

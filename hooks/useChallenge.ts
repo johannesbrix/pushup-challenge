@@ -25,7 +25,7 @@ export function useChallenge() {
           }
         }
       } catch (error) {
-        console.error("Failed to load challenge data:", error);
+        console.error("Failed to load challenge data");
       } finally {
         setIsLoading(false);
       }

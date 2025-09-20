@@ -17,7 +17,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         first_name: user.firstName || undefined,
         last_name: user.lastName || undefined,
       }).catch((error) => {
-        console.error("Failed to save user to database:", error);
+        console.error("Failed to save user to database");
       });
     }
   }, [isSignedIn, user]);

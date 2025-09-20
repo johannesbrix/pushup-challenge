@@ -9,8 +9,6 @@ import { desc } from "drizzle-orm";
 
 export async function getRecentSubmissions(limit: number = 10) {
     try {
-      console.log("Server Action: Fetching recent submissions...");
-      
       const recentSubmissions = await db
         .select({
           id: submissions.id,
@@ -56,8 +54,6 @@ export async function createSubmission({
   note?: string;
 }) {
   try {
-    console.log("Server Action: Creating submission...");
-    
     const [newSubmission] = await db
       .insert(submissions)
       .values({
@@ -70,7 +66,7 @@ export async function createSubmission({
       })
       .returning();
     
-    console.log("Server Action: Submission created:", newSubmission);
+    console.log("Server Action: Submission created successfully");
     return newSubmission;
   } catch (error) {
     console.error("Server Action Error (createSubmission):", error);
@@ -80,8 +76,6 @@ export async function createSubmission({
 
 export async function calculateLeaderboard() {
   try {
-    console.log("Server Action: Calculating leaderboard...");
-    
     // Get all unique users who have submitted
     const uniqueUsers = await db
       .select({
@@ -119,30 +113,24 @@ export async function calculateLeaderboard() {
 
 export async function calculateCompletionRate() {
   try {
-    console.log("Server Action: Calculating group completion rate...");
-    
     const uniqueUsers = await db
       .selectDistinct({ user_id: submissions.user_id })
       .from(submissions);
     
-    console.log("Found users:", uniqueUsers.length);
+    console.log(`Found ${uniqueUsers.length} users for completion rate calculation`);
     
     let totalCompletedDays = 0;
     let totalChallengeDays = 0;
     
     for (const user of uniqueUsers) {
       const userCompletionData = await calculateUserCompletionRate(user.user_id);
-      console.log(`User ${user.user_id}: ${userCompletionData.completed_days}/${userCompletionData.total_challenge_days} = ${userCompletionData.completion_rate}%`);
-      
       totalCompletedDays += userCompletionData.completed_days;
       totalChallengeDays += userCompletionData.total_challenge_days;
     }
     
-    console.log(`Group totals: ${totalCompletedDays}/${totalChallengeDays}`);
-    
     const completionRate = totalChallengeDays > 0 ? (totalCompletedDays / totalChallengeDays) * 100 : 0;
     
-    console.log(`Server Action: Group completion rate - ${totalCompletedDays}/${totalChallengeDays} = ${completionRate.toFixed(1)}%`);
+    console.log(`Server Action: Group completion rate calculated: ${completionRate.toFixed(1)}%`);
     
     return {
       completed_days: totalCompletedDays,
@@ -157,8 +145,6 @@ export async function calculateCompletionRate() {
 
 export async function calculateTotalFriends() {
   try {
-    console.log("Server Action: Calculating total friends...");
-    
     const uniqueUsers = await db
       .selectDistinct({ user_id: submissions.user_id })
       .from(submissions);
@@ -175,12 +161,10 @@ export async function calculateTotalFriends() {
 
 export async function calculateGroupPoints() {
   try {
-    console.log("Server Action: Calculating group points...");
-    
     const leaderboard = await calculateLeaderboard();
     const groupPoints = leaderboard.reduce((total, user) => total + user.total_score, 0);
     
-    console.log(`Server Action: Group points total: ${groupPoints}`);
+    console.log(`Server Action: Group points calculated: ${groupPoints}`);
     return Math.round(groupPoints * 10) / 10; // Round to 1 decimal
   } catch (error) {
     console.error("Server Action Error (calculateGroupPoints):", error);
@@ -190,8 +174,6 @@ export async function calculateGroupPoints() {
 
 export async function calculateUserCompletionRate(user_id: string) {
   try {
-    console.log(`Server Action: Calculating completion rate for user ${user_id}...`);
-    
     const userSubmissions = await db
       .select({
         submission_date: submissions.submission_date,
@@ -239,7 +221,7 @@ export async function calculateUserCompletionRate(user_id: string) {
     
     const completionRate = totalChallengeDays > 0 ? (completedDays / totalChallengeDays) * 100 : 0;
     
-    console.log(`Server Action: User completion rate - ${completedDays}/${totalChallengeDays} = ${completionRate.toFixed(1)}%`);
+    console.log(`Server Action: User completion rate calculated: ${completionRate.toFixed(1)}%`);
     
     return {
       completed_days: completedDays,
@@ -254,8 +236,6 @@ export async function calculateUserCompletionRate(user_id: string) {
 
 export async function calculateUserTotalPoints(user_id: string) {
   try {
-    console.log(`Server Action: Calculating total points for user ${user_id}...`);
-    
     const userSubmissions = await db
       .select({
         submission_date: submissions.submission_date,
@@ -288,7 +268,7 @@ export async function calculateUserTotalPoints(user_id: string) {
     });
     
     const roundedScore = Math.round(totalScore * 10) / 10;
-    console.log(`Server Action: User total points: ${roundedScore}`);
+    console.log(`Server Action: User total points calculated: ${roundedScore}`);
     
     return roundedScore;
   } catch (error) {
@@ -299,15 +279,13 @@ export async function calculateUserTotalPoints(user_id: string) {
 
 export async function calculateUserDaysActive(user_id: string) {
   try {
-    console.log(`Server Action: Calculating days active for user ${user_id}...`);
-    
     const distinctDates = await db
       .selectDistinct({ submission_date: submissions.submission_date })
       .from(submissions)
       .where(eq(submissions.user_id, user_id));
     
     const daysActive = distinctDates.length;
-    console.log(`Server Action: User has been active for ${daysActive} days`);
+    console.log(`Server Action: User active days calculated: ${daysActive}`);
     
     return daysActive;
   } catch (error) {
@@ -318,8 +296,6 @@ export async function calculateUserDaysActive(user_id: string) {
 
 export async function calculateUserDayStreak(user_id: string) {
   try {
-    console.log(`Server Action: Calculating day streak for user ${user_id}...`);
-    
     const userSubmissions = await db
       .select({
         submission_date: submissions.submission_date,
@@ -362,7 +338,7 @@ export async function calculateUserDayStreak(user_id: string) {
     
     // If no successful day found, or most recent success is not today/yesterday, streak is 0
     if (!mostRecentSuccessDay || (mostRecentSuccessDay !== today && mostRecentSuccessDay !== yesterday)) {
-      console.log(`Server Action: Streak broken - most recent success: ${mostRecentSuccessDay}`);
+      console.log("Server Action: Streak broken - no recent success");
       return 0;
     }
     
@@ -391,7 +367,7 @@ export async function calculateUserDayStreak(user_id: string) {
       }
     }
     
-    console.log(`Server Action: Current day streak: ${streak} days`);
+    console.log(`Server Action: Day streak calculated: ${streak} days`);
     return streak;
   } catch (error) {
     console.error("Server Action Error (calculateUserDayStreak):", error);
@@ -401,8 +377,6 @@ export async function calculateUserDayStreak(user_id: string) {
 
 export async function generateMotivationalMessage(user_id: string) {
   try {
-    console.log(`Server Action: Generating motivational message for user ${user_id}...`);
-    
     const leaderboard = await calculateLeaderboard();
     
     if (leaderboard.length === 0) {
@@ -495,8 +469,6 @@ export async function getDailyMotivationalMessage() {
 
 export async function calculateChallengeProgress(user_id: string) {
   try {
-    console.log(`Server Action: Calculating challenge progress for user ${user_id}...`);
-    
     const firstSubmission = await db
       .select({ submission_date: submissions.submission_date })
       .from(submissions)

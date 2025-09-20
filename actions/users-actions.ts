@@ -16,8 +16,6 @@ export async function createOrUpdateUser({
   last_name?: string;
 }) {
   try {
-    console.log("Server Action: Creating or updating user...");
-    
     // Check if user already exists
     const existingUser = await db
       .select()
@@ -38,7 +36,7 @@ export async function createOrUpdateUser({
         .where(eq(users.clerk_id, clerk_id))
         .returning();
       
-      console.log("Server Action: User updated:", updatedUser);
+      console.log("Server Action: User updated successfully");
       return updatedUser;
     } else {
       // Create new user
@@ -52,7 +50,7 @@ export async function createOrUpdateUser({
         })
         .returning();
       
-      console.log("Server Action: User created:", newUser);
+      console.log("Server Action: User created successfully");
       return newUser;
     }
   } catch (error) {
@@ -86,8 +84,6 @@ export async function updateUserNames({
   last_name: string;
 }) {
   try {
-    console.log("Server Action: Updating user names...");
-    
     const [updatedUser] = await db
       .update(users)
       .set({
@@ -102,7 +98,7 @@ export async function updateUserNames({
       throw new Error("User not found for update.");
     }
     
-    console.log("Server Action: User names updated:", updatedUser);
+    console.log("Server Action: User names updated successfully");
     return updatedUser;
   } catch (error) {
     console.error("Server Action Error (updateUserNames):", error);

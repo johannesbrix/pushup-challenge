@@ -16,8 +16,6 @@ export async function createHabit({
   daily_goal: number;
 }) {
   try {
-    console.log("Server Action: Creating habit...");
-    
     const [newHabit] = await db
       .insert(habits)
       .values({
@@ -28,7 +26,7 @@ export async function createHabit({
       })
       .returning();
     
-    console.log("Server Action: Habit created:", newHabit);
+    console.log("Server Action: Habit created successfully");
     return newHabit;
   } catch (error) {
     console.error("Server Action Error (createHabit):", error);
@@ -43,7 +41,7 @@ export async function getHabitsByUserId(user_id: string) {
       .from(habits)
       .where(eq(habits.user_id, user_id));
     
-    console.log(`Server Action: Fetched ${userHabits.length} habits for user`);
+    console.log(`Server Action: Fetched ${userHabits.length} habits`);
     return userHabits;
   } catch (error) {
     console.error("Server Action Error (getHabitsByUserId):", error);
@@ -63,8 +61,6 @@ export async function updateHabit({
   daily_goal: number;
 }) {
   try {
-    console.log("Server Action: Updating habit...");
-    
     const [updatedHabit] = await db
       .update(habits)
       .set({
@@ -80,7 +76,7 @@ export async function updateHabit({
       throw new Error("Habit not found for update.");
     }
     
-    console.log("Server Action: Habit updated:", updatedHabit);
+    console.log("Server Action: Habit updated successfully");
     return updatedHabit;
   } catch (error) {
     console.error("Server Action Error (updateHabit):", error);
